@@ -1,0 +1,25 @@
+
+### First Readings:
+M:318
+Hum:3689      100.0 * H / (2**14) == 22.5%
+CO2:1207      // parts per million?
+Light:14
+Temp:7592     T[C] = 165 * T / 2**14 - 40
+Temp_T1:544
+7571
+
+
+### Second Readings
+
+
+To Aim For Readings:
+Humidity: 42% CO Gas: 2003.91% Temperature: 73F NO2 Gas: 2067.45%
+Humidity: 42% CO Gas: 1974.58% Temperature: 75F NO2 Gas: 2082.11%
+Humidity: 42% CO Gas: 1950.15% Temperature: 73F NO2 Gas: 2087.00%
+Humidity: 42% CO Gas: 1940.37% Temperature: 73F NO2 Gas: 2140.76%
+Humidity: 42% CO Gas: 1930.60% Temperature: 75F NO2 Gas: 2106.55%
+Humidity: 42% CO Gas: 1925.71% Temperature: 74F NO2 Gas: 2111.44%
+Humidity: 41% CO Gas: 1925.71% Temperature: 74F NO2 Gas: 2126.10%
+Humidity: 41% CO Gas: 1930.60% Temperature: 74F NO2 Gas: 2130.99%
+
+

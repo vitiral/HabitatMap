@@ -1,0 +1,135 @@
+
+
+//Write to the command register, Must be called!!
+void LightInit()
+{   
+  Wire.beginTransmission(0x44);    //write
+  Wire.write(0x01);                 //Send to control register
+  Wire.write(0x06);                 //00001100    I used 12 bits resolution rather than 16 bit.
+  Wire.endTransmission();
+  LightBegin();
+}
+
+void LightBegin()
+{
+
+  Wire.beginTransmission(0x44);    //write 
+  Wire.write(0x00);                 //Send to Command register
+  Wire.write(0x88);                   //10001001    I used 12 bits resolution rather than 16 bit.
+  Wire.endTransmission();
+}
+
+void LightEnd()
+{
+  Wire.beginTransmission(0x44);    
+  Wire.write(0x00);                 //Send Command to Read
+  Wire.write(0x00);                   //10001001 
+  Wire.endTransmission();
+}
+
+
+unsigned int ReadLightSensor()
+{
+  unsigned int lightValue = 0;
+  //LightBegin();
+  //delay(100);
+  Wire.beginTransmission(0x44);    //Write to Write Data Address
+  Wire.write(0x05);                 //Send Command to Read MSB,should be 05
+  Wire.endTransmission();
+  //Wire.requestFrom(0x44,1);
+  Wire.requestFrom(0x44,1);        //Read 7 bytes from the S100 with read address
+  if (Wire.available())
+  { 
+    lightValue = Wire.read();    //first byte
+    lightValue = lightValue << 8;  
+  }
+  Wire.beginTransmission(0x44);    
+  Wire.write(0x04);                 //Send Command to Read LSB, should be 04
+  Wire.endTransmission();
+  Wire.requestFrom(0x44,1);      
+  //Wire.requestFrom(0x44,1);   
+  if (Wire.available())
+  { 
+    lightValue += Wire.read();    //first byte  
+  }
+  return lightValue;
+}
+
+
+
+
+//SHT21 need 15ms to startup
+//no need to use this, default value is fine
+unsigned int SHT21Init()
+{
+  Wire.beginTransmission(0x40);
+  Wire.write(0xE6);
+  Wire.write(0x03);   
+  Wire.endTransmission();
+}
+
+
+unsigned int ReadTempSensor()
+{
+  unsigned int tempValue = 0;
+
+  //Temperature Sensor START
+  Wire.beginTransmission(0x40);
+  Wire.write(0xF3);
+  Wire.endTransmission();   
+  delay (100);
+  Wire.requestFrom(0x40,3);        //Read 2 bytes from the Temperature Sensor with read address  
+  if( Wire.available() >= 2 )
+  {
+    tempValue = Wire.read();            //Convert ASCII to decimal: 0x32 converts to 0x02
+    tempValue = tempValue << 8;        //Upper High Byte (Most significant byte received first)     
+    tempValue += Wire.read();           //Convert to ASCII and append to end of Data structure
+    tempValue = tempValue >> 2;					//get rid of the unwanted data
+  }    
+  return tempValue;
+  //Humidity Sensor END 
+}
+
+
+void TempSensorsInit_TI()
+{
+
+  //Set up one shot modes for both TMP100 U17 and U18 chips
+  Wire.beginTransmission(0x48);    //Write to Write Data Address of U29
+  Wire.write(0x01);                 //Send command to write to pointer register 0, i.e. configuration register
+  Wire.write(0x60);                 //Write to configuration register OS/ALERT = 0; R1/R0 = 11 (12 bits); F1/F0 = 00 (fault condition, don't care in our case)
+  //POL = 0 (Don't care); TM = 0 (Don't care); SD = 0 (set up to continuous conversion mode)
+  //Can set up in one-shot mode to consume 0.1uA current vs. 75uA current in continuous mode
+  Wire.endTransmission();
+  delay(100);
+
+  Wire.beginTransmission(0x48);    //Write to Write Data Address of U29
+  Wire.write(0x00);                 //Send command to set up pointer register to point to the temperature read register
+  Wire.endTransmission();
+}
+
+unsigned int ReadTempSensor_TI()
+{
+  unsigned int tempValue = 0;
+  unsigned int interValue = 0;
+
+  Wire.beginTransmission(0x48);    //Write to Write Data Address of U17
+  Wire.requestFrom(0x48,2);        //Read 2 bytes from the TEMP Sensor 2 with read address
+  Wire.endTransmission();  
+
+  if( 2==Wire.available() )
+  {
+    tempValue = Wire.read();          //Recieve High Byte
+    tempValue = tempValue << 4;          //Shift Left by 4 since, it is a complete 12 bit number
+    interValue =  Wire.read();        //Receive Lower byte, first 4 MSBs are relevant, last 4 MSBs are 0 and irrelevant
+    interValue = interValue>>4;          //Shift Lower byte by 4
+    tempValue |= interValue;             //OR the two values to form complete temperature reading, Actual Value is in Two's Complement Form
+  }
+
+  //if(0xF7FF & tempValue)
+  //  tempValue |= 0xF000;                 //Bring it to the real two's complement form
+
+  delay(50);  
+  return tempValue;
+}
+
