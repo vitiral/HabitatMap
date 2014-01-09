@@ -267,10 +267,17 @@ float ReadTempSensor_TI()
     tempValue = tempValue << 4;          //Shift Left by 4 since, it is a complete 12 bit number
     interValue =  Wire.read();        //Receive Lower byte, first 4 MSBs are relevant, last 4 MSBs are 0 and irrelevant
     interValue = interValue >> 4;          //Shift Lower byte by 4
-    tempValue |= interValue;             //OR the two values to form complete temperature reading, Actual Value is in Two's Complement Form
+    //tempValue |= interValue;             //OR the two values to form complete temperature reading, Actual Value is in Two's Complement Form
+    tempValue += interValue;
   }
   else return -1;
 
+  if(tempValue & 0x0800){
+    // it is negative
+    tempValue &= ~0x0800; // get rid of - bit
+    tempValue = -tempValue;
+  }
+  
   //if(0xF7FF & tempValue)
   //  tempValue |= 0xF000;                 //Bring it to the real two's complement form
 
@@ -284,6 +291,9 @@ float ReadTempSensor_TI()
   //T = T * 25.0;
   //T = T / 400.0;
   T = (T - .15) / 16.0;
+  // Convert to F  9/5 (C+32)
+  T =  T + 32;
+  T = T * 9 / 5;
   return T;
 }
 
