@@ -333,13 +333,13 @@ void setup()
 void write_data(){
   //Display of humidity
   Serial.print(ReadHumiditySensor());
-  Serial.print(F(";InsertSensorPackageName;HIH4030;Humidity;RH;percent;%;0;25;50;75;100"));
+  Serial.print(F(";InsertSensorPackageName;HYT271;Humidity;RH;percent;%;0;25;50;75;100"));
   Serial.print(F("\n"));
 
 
   //Display of CO gas sensor
   Serial.print(ReadCO2Sensor());
-  Serial.print(F(";InsertSensorPackageName;TGS2442;CO Gas;CO;response indicator;RI;0;25;50;75;100"));
+  Serial.print(F(";InsertSensorPackageName;S100;CO Gas;CO;response indicator;RI;0;25;50;75;100"));
   Serial.print(F("\n"));
 
   //Display of temperature in K, C, and F
@@ -349,7 +349,7 @@ void write_data(){
   //Serial.print("\n");
   
   Serial.print(ReadTempSensor_TI());
-  Serial.print(F(";InsertSensorPackageName;TMP36;Temperature;F;degrees Fahrenheit;F;0;30;60;90;120"));
+  Serial.print(F(";InsertSensorPackageName;TMP175;Temperature;F;degrees Fahrenheit;F;0;30;60;90;120"));
   Serial.print(F("\n"));
   
   //Serial.print(NO2);
