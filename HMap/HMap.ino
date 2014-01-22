@@ -291,9 +291,7 @@ float ReadTempSensor_TI()
   //T = T * 25.0;
   //T = T / 400.0;
   T = (T - .15) / 16.0;
-  // Convert to F  9/5 (C+32)
-  T =  T + 32;
-  T = T * 9 / 5;
+  
   return T;
 }
 
@@ -331,16 +329,13 @@ void setup()
 }
 
 void write_data(){
+  float tempC;
   //Display of humidity
   Serial.print(ReadHumiditySensor());
-  Serial.print(F(";InsertSensorPackageName;HYT271;Humidity;RH;percent;%;0;25;50;75;100"));
-  Serial.print(F("\n"));
+  Serial.print(F(";InsertSensorPackageName;HYT271;Humidity;RH;percent;%;0;25;50;75;100\n"));
 
-
-  //Display of CO gas sensor
-  Serial.print(ReadCO2Sensor());
-  Serial.print(F(";InsertSensorPackageName;S100;CO Gas;CO;response indicator;RI;0;25;50;75;100"));
-  Serial.print(F("\n"));
+  //Serial.print(ReadCO2Sensor());
+  //Serial.print(F(";InsertSensorPackageName;S100;CO2 Gas;CO;parts per million;ppm;0;25;50;75;100\n"));
 
   //Display of temperature in K, C, and F
 
@@ -348,13 +343,19 @@ void write_data(){
   //Serial.print(";InsertSensorPackageName;TMP36;Temperature;K;kelvin;K;273;300;400;500;600");
   //Serial.print("\n");
   
-  Serial.print(ReadTempSensor_TI());
-  Serial.print(F(";InsertSensorPackageName;TMP175;Temperature;F;degrees Fahrenheit;F;0;30;60;90;120"));
-  Serial.print(F("\n"));
+  tempC = ReadTempSensor_TI();
+  // Convert to F  9/5 (C+32)
+  tempC =  tempC + 32;
+  tempC = tempC * 9 / 5;
   
-  //Serial.print(NO2);
-  //Serial.print(";InsertSensorPackageName;MiCS-2710;N02 Gas;NO2;response indicator;RI;0;25;50;75;100");
-  //Serial.print("\n");
+  Serial.print(tempC);
+  Serial.print(F(";InsertSensorPackageName;TMP175;Temperature;F;degrees Fahrenheit;F;0;30;60;90;120\n"));
+  
+  Serial.print(analogRead(CO_SENSE_PIN));
+  Serial.print(F(";InsertSensorPackageName;S100;CO Gas;CO;response indicator;RI;0;25;50;75;100\n"));
+  
+  Serial.print(analogRead(NO_SENSE_PIN));
+  Serial.print(";InsertSensorPackageName;MiCS-2710;N02 Gas;NO2;response indicator;RI;0;25;50;75;100\n");
 }
 
 //int test_count = 0;
