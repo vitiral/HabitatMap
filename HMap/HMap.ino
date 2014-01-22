@@ -352,7 +352,7 @@ void write_data(){
   Serial.print(F(";InsertSensorPackageName;TMP175;Temperature;F;degrees Fahrenheit;F;0;30;60;90;120\n"));
   
   Serial.print(analogRead(CO_SENSE_PIN));
-  Serial.print(F(";InsertSensorPackageName;S100;CO Gas;CO;response indicator;RI;0;25;50;75;100\n"));
+  Serial.print(F(";InsertSensorPackageName;MiCS-5525;CO Gas;CO;response indicator;RI;0;25;50;75;100\n"));
   
   Serial.print(analogRead(NO_SENSE_PIN));
   Serial.print(";InsertSensorPackageName;MiCS-2710;N02 Gas;NO2;response indicator;RI;0;25;50;75;100\n");
