@@ -54,7 +54,7 @@ SoftwareSerial dSerial(MOSI, MISO); // RX, TX
 #define CO_CONTROL_PIN 6        //PIN 10
 #define VOC_SENSE_ON_PIN 2       //PIN 32
 #define EXT_CO_PIN A0
-#define VOC_SENSE_PIN A3   //PIN 26
+#define VOC_SENSE_PIN A3   //PIN 26  // VOC = Volotile Organic Compounds
 #define BAT_SENSE_PIN A2         //PIN 25 
 #define NO_CONTROL_PIN 4     //PIN 2
 #define OZONE_CONTROL_PIN 5      //PIN 9
@@ -334,9 +334,6 @@ void write_data(){
   Serial.print(ReadHumiditySensor());
   Serial.print(F(";InsertSensorPackageName;HYT271;Humidity;RH;percent;%;0;25;50;75;100\n"));
 
-  //Serial.print(ReadCO2Sensor());
-  //Serial.print(F(";InsertSensorPackageName;S100;CO2 Gas;CO;parts per million;ppm;0;25;50;75;100\n"));
-
   //Display of temperature in K, C, and F
 
   //Serial.print(kelv);
@@ -351,16 +348,27 @@ void write_data(){
   Serial.print(tempC);
   Serial.print(F(";InsertSensorPackageName;TMP175;Temperature;F;degrees Fahrenheit;F;0;30;60;90;120\n"));
   
+  Serial.print(ReadCO2Sensor());
+  Serial.print(F(";InsertSensorPackageName;S100;CO2 Gas;CO;parts per million;ppm;0;1250;2500;3750;5000\n"));
+  
   Serial.print(analogRead(CO_SENSE_PIN));
   Serial.print(F(";InsertSensorPackageName;MiCS-5525;CO Gas;CO;response indicator;RI;0;25;50;75;100\n"));
   
   Serial.print(analogRead(NO_SENSE_PIN));
-  Serial.print(";InsertSensorPackageName;MiCS-2710;N02 Gas;NO2;response indicator;RI;0;25;50;75;100\n");
+  Serial.print(F(";InsertSensorPackageName;MiCS-2710;N02 Gas;NO2;response indicator;RI;0;25;50;75;100\n"));
+  
+  Serial.print(analogRead(OZONE_SENSE_PIN));
+  Serial.print(F(";InsertSensorPackageName;MiCS-2611;Ozone;O3;response indicator;RI;0;25;50;75;100\n"));
+  
+  Serial.print(analogRead(VOC_SENSE_PIN));
+  Serial.print(F(";InsertSensorPackageName;PACKAGE NAME;Ozone;O3;response indicator;RI;0;25;50;75;100\n"));
+  
 }
 
 //int test_count = 0;
 void loop()
 { 
+  /*
   float out;
   String outs;
   
@@ -383,11 +391,9 @@ void loop()
   
   dSerial.print(F("Temp_T1:"));
   dSerial.println(ReadTempSensor_TI());
-  /*
-  getData();
-  dSerial.println(millis());
-  */
+
   dSerial.println();
+  */
   write_data();
   delay(3000);
   
