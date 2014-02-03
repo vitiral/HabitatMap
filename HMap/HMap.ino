@@ -3,6 +3,7 @@
 //Revison  1.5: Yun Xiang, xiangyun@umich.edu
 //Revision 2: Yun Xiang
 //Revision 3: Yun Xiang
+//Revision 4: Garrett Berg for use with Aircasting App
 //********* WARNING: Bluetooth Module needs to be Initialized using the epodBluetoothInit Code the first time ever
 //After doing this once, you DO NOT need to do this again ever unless you think something is wrong*************/
 
@@ -32,7 +33,7 @@
 
 #include <MemoryFree.h>
 #include <SoftwareSerial.h>
-#define DEBUG
+//#define DEBUG
 #include <errorhandling.h>
 SoftwareSerial dSerial(MOSI, MISO); // RX, TX
 
@@ -92,7 +93,8 @@ SoftwareSerial dSerial(MOSI, MISO); // RX, TX
 // ************   SENSORS
 
 #define TWO_TO_14 16384.0;
-float ReadHumiditySensor()
+//float ReadHumiditySensor()
+uint16_t ReadHumiditySensor()
 {
   uint16_t humidityValue = 0;
   uint16_t tempValue = 0;
@@ -118,14 +120,19 @@ float ReadHumiditySensor()
     return -1;
   }
   
+  return humidityValue;
+  
+  /*
   //100.0 * H / (2**14) == 22.5%
   double H = humidityValue;
   H = H * 100;
   H = H / TWO_TO_14;
   return H;
+  */
 } 
 
-float ReadTempSensor()
+//float ReadTempSensor()
+uint16_t ReadTempSensor()
 {
   unsigned int tempValue = 0;
 
@@ -155,12 +162,15 @@ float ReadTempSensor()
   else{
     return -1;
   }
+  return tempValue;
+  /*
   //debug(tempValue);
   // T[C] = 165 * T / 2**14 - 40
   double T = tempValue;
   T = T * 165.0;
   T = T / TWO_TO_14;
   return T - 40.0;
+  */
 }
 
 unsigned int ReadCO2Sensor()
@@ -246,7 +256,8 @@ void TempSensorsInit_TI()
   Wire.endTransmission();
 }
 
-float ReadTempSensor_TI()
+//float ReadTempSensor_TI()
+uint16_t ReadTempSensor_TI()
 {
   unsigned int tempValue = 0;
   unsigned int interValue = 0;
@@ -271,13 +282,15 @@ float ReadTempSensor_TI()
     tempValue += interValue;
   }
   else return -1;
-
+  
   if(tempValue & 0x0800){
     // it is negative
     tempValue &= ~0x0800; // get rid of - bit
     tempValue = -tempValue;
   }
   
+  return tempValue;
+  /*
   //if(0xF7FF & tempValue)
   //  tempValue |= 0xF000;                 //Bring it to the real two's complement form
 
@@ -293,6 +306,7 @@ float ReadTempSensor_TI()
   T = (T - .15) / 16.0;
   
   return T;
+  */
 }
 
 
@@ -303,7 +317,7 @@ void setup()
 {
   Serial.begin(115200);                          // Initialize serial communication with the Bluetooth module
   dSerial.begin(19200);
-  Logger.config_soft(&dSerial);
+  L_config_soft(&dSerial);
   Wire.begin();                                  // Initialize I2C Bus
   
   pinMode(LED_CONTROL_PIN,OUTPUT);
@@ -329,40 +343,49 @@ void setup()
 }
 
 void write_data(){
+  /*
+  CO2     ppm
+  CO      ppb
+  VOC     ppb
+  03      ppb
+  NO      ppb
+  light   raw
+  */
   float tempC;
   //Display of humidity
   Serial.print(ReadHumiditySensor());
-  Serial.print(F(";InsertSensorPackageName;HYT271;Humidity;RH;percent;%;0;25;50;75;100\n"));
+  Serial.println(F(";InsertSensorPackageName;HYT271;Humidity;RH;response indicator;RI;0;1000;2000;3000;4096"));
 
   //Display of temperature in K, C, and F
 
   //Serial.print(kelv);
-  //Serial.print(";InsertSensorPackageName;TMP36;Temperature;K;kelvin;K;273;300;400;500;600");
-  //Serial.print("\n");
+  //Serial.println(";InsertSensorPackageName;TMP36;Temperature;K;kelvin;K;273;300;400;500;600");
   
+  /*
   tempC = ReadTempSensor_TI();
   // Convert to F  9/5 (C+32)
   tempC =  tempC + 32;
   tempC = tempC * 9 / 5;
   
   Serial.print(tempC);
-  Serial.print(F(";InsertSensorPackageName;TMP175;Temperature;F;degrees Fahrenheit;F;0;30;60;90;120\n"));
+  */
+  Serial.print(ReadTempSensor_TI());
+  Serial.println(F(";InsertSensorPackageName;TMP175;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
   
   Serial.print(ReadCO2Sensor());
-  Serial.print(F(";InsertSensorPackageName;S100;CO2 Gas;CO;parts per million;ppm;0;1250;2500;3750;5000\n"));
+  Serial.println(F(";InsertSensorPackageName;S100;CO2 Gas;CO;response indicator;RI;0;1250;2500;3750;5000"));
   
   Serial.print(analogRead(CO_SENSE_PIN));
-  Serial.print(F(";InsertSensorPackageName;MiCS-5525;CO Gas;CO;response indicator;RI;0;25;50;75;100\n"));
+  Serial.println(F(";InsertSensorPackageName;MiCS-5525;CO Gas;CO;response indicator;RI;0;250;500;750;1000"));
   
   Serial.print(analogRead(NO_SENSE_PIN));
-  Serial.print(F(";InsertSensorPackageName;MiCS-2710;N02 Gas;NO2;response indicator;RI;0;25;50;75;100\n"));
+  Serial.println(F(";InsertSensorPackageName;MiCS-2710;N02 Gas;NO2;response indicator;RI;0;250;500;750;1000"));
   
   Serial.print(analogRead(OZONE_SENSE_PIN));
-  Serial.print(F(";InsertSensorPackageName;MiCS-2611;Ozone;O3;response indicator;RI;0;25;50;75;100\n"));
+  Serial.print(F(";InsertSensorPackageName;MiCS-2611;Ozone;O3;response indicator;RI;0;250;500;750;1000"));
   
   Serial.print(analogRead(VOC_SENSE_PIN));
-  Serial.print(F(";InsertSensorPackageName;PACKAGE NAME;Ozone;O3;response indicator;RI;0;25;50;75;100\n"));
-  
+  Serial.print(F(";InsertSensorPackageName;MiCS-5121;Volotile Organic Compounds;VOC;response indicator;RI;0;250;500;750;1000"));
 }
 
 //int test_count = 0;
