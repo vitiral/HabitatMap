@@ -32,10 +32,14 @@
 //#include <avr/wdt.h>
 
 #include <MemoryFree.h>
-#include <SoftwareSerial.h>
+
 //#define DEBUG
+//#include <SoftwareSerial.h>
+//SoftwareSerial dSerial(MOSI, MISO); // RX, TX
+
 #include <errorhandling.h>
-SoftwareSerial dSerial(MOSI, MISO); // RX, TX
+
+
 
 //This is the buffer size!!
 #define Buffer_size 1
@@ -92,85 +96,51 @@ SoftwareSerial dSerial(MOSI, MISO); // RX, TX
 // ****************************************************************************************8
 // ************   SENSORS
 
-#define TWO_TO_14 16384.0;
-//float ReadHumiditySensor()
 uint16_t ReadHumiditySensor()
 {
   uint16_t humidityValue = 0;
-  uint16_t tempValue = 0;
+
   //Humidity Sensor START
   Wire.beginTransmission(0x40);
-  Wire.write(0xF5);
-  Wire.endTransmission();
+  //Wire.write(0xF5);
+  Wire.write(0x05);
+  Wire.endTransmission();   
   delay (100);
   Wire.requestFrom(0x40,3);        //Read 2 bytes from the Humidity Sensor with read address  
   if( Wire.available() >= 2 )
   {
     humidityValue = Wire.read();            //Convert ASCII to decimal: 0x32 converts to 0x02
     humidityValue = humidityValue << 8;        //Upper High Byte (Most significant byte received first)     
-    humidityValue += Wire.read();           //Convert to ASCII and append to end of Data structure
-    humidityValue = humidityValue >> 2;        // get rid of the unwanted data
-    //humidityvalue = Wire.read();
-    debug(humidityValue, BIN);
-    //humidityValue = (humidityValue bitand 0x3F) << 8;
-    //humidityValue |= Wire.read();
-    //tempValue = (Wire.read()) << 6;
-  }
-  else{
-    return -1;
-  }
-  
+    humidityValue |= Wire.read();           //Convert to ASCII and append to end of Data structure
+    
+    //humidityValue = humidityValue >> 2;        // get rid of the unwanted data
+    humidityValue &= 0xFFF;
+  }    
   return humidityValue;
-  
-  /*
-  //100.0 * H / (2**14) == 22.5%
-  double H = humidityValue;
-  H = H * 100;
-  H = H / TWO_TO_14;
-  return H;
-  */
-} 
+  //Humidity Sensor END 
+}
 
-//float ReadTempSensor()
 uint16_t ReadTempSensor()
 {
-  unsigned int tempValue = 0;
+  uint16_t tempValue = 0;
 
   //Temperature Sensor START
   Wire.beginTransmission(0x40);
   //Wire.write(0xF3);
-  Wire.write(0xF3);
+  Wire.write(0x03);
   Wire.endTransmission();   
   delay (100);
   Wire.requestFrom(0x40,3);        //Read 2 bytes from the Temperature Sensor with read address  
-  if( Wire.available() >= 3 )
+  if( Wire.available() >= 2 )
   {
-    //tempValue = Wire.read();            //Convert ASCII to decimal: 0x32 converts to 0x02
-    //tempValue = tempValue << 8;        //Upper High Byte (Most significant byte received first)     
-    //tempValue += Wire.read();           //Convert to ASCII and append to end of Data structure
+    tempValue = Wire.read();            //Convert ASCII to decimal: 0x32 converts to 0x02
+    tempValue = tempValue << 8;        //Upper High Byte (Most significant byte received first)     
+    tempValue |= Wire.read();           //Convert to ASCII and append to end of Data structure
     //tempValue = tempValue >> 2;					//get rid of the unwanted data
-    
-    //tempValue = (Wire.read() bitand 0x3F) << 8;
-    //tempValue = tempValue bitor Wire.read();
-    
-    Wire.read();
-    Wire.read();
-    tempValue = Wire.read() << 8;
-    //tempValue |= Wire.read();
-    tempValue = tempValue >> 2;
-  }
-  else{
-    return -1;
+    tempValue &= 0x3FFF;
   }
   return tempValue;
-  /*
-  //debug(tempValue);
-  // T[C] = 165 * T / 2**14 - 40
-  double T = tempValue;
-  T = T * 165.0;
-  T = T / TWO_TO_14;
-  return T - 40.0;
-  */
+  //Humidity Sensor END 
 }
 
 unsigned int ReadCO2Sensor()
@@ -316,8 +286,9 @@ uint16_t ReadTempSensor_TI()
 void setup()
 {
   Serial.begin(115200);                          // Initialize serial communication with the Bluetooth module
-  dSerial.begin(19200);
-  L_config_soft(&dSerial);
+  //dSerial.begin(19200);
+  //L_config_soft(&dSerial);
+  
   Wire.begin();                                  // Initialize I2C Bus
   
   pinMode(LED_CONTROL_PIN,OUTPUT);
@@ -354,38 +325,29 @@ void write_data(){
   float tempC;
   //Display of humidity
   Serial.print(ReadHumiditySensor());
-  Serial.println(F(";InsertSensorPackageName;HYT271;Humidity;RH;response indicator;RI;0;1000;2000;3000;4096"));
-
-  //Display of temperature in K, C, and F
-
-  //Serial.print(kelv);
-  //Serial.println(";InsertSensorPackageName;TMP36;Temperature;K;kelvin;K;273;300;400;500;600");
+  Serial.println(F(";InsertSensorPackageName;HYT271-H;Humidity;RH;response indicator;RI;0;1000;2000;3000;4096"));
   
-  /*
-  tempC = ReadTempSensor_TI();
-  // Convert to F  9/5 (C+32)
-  tempC =  tempC + 32;
-  tempC = tempC * 9 / 5;
-  
-  Serial.print(tempC);
-  */
+  Serial.print(ReadTempSensor());
+  //Serial.print(42);
+  Serial.println(F(";InsertSensorPackageName;HYT271-T;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
+
   Serial.print(ReadTempSensor_TI());
   Serial.println(F(";InsertSensorPackageName;TMP175;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
   
   Serial.print(ReadCO2Sensor());
-  Serial.println(F(";InsertSensorPackageName;S100;CO2 Gas;CO;response indicator;RI;0;1250;2500;3750;5000"));
+  Serial.println(F(";InsertSensorPackageName;S100;CO2 Gas;CO;;RI;0;1250;2500;3750;5000"));
   
   Serial.print(analogRead(CO_SENSE_PIN));
-  Serial.println(F(";InsertSensorPackageName;MiCS-5525;CO Gas;CO;response indicator;RI;0;250;500;750;1000"));
+  Serial.println(F(";InsertSensorPackageName;MiCS-5525;CO Gas;CO;Analog Value;AV;0;250;500;750;1000"));
   
   Serial.print(analogRead(NO_SENSE_PIN));
-  Serial.println(F(";InsertSensorPackageName;MiCS-2710;N02 Gas;NO2;response indicator;RI;0;250;500;750;1000"));
+  Serial.println(F(";InsertSensorPackageName;MiCS-2710;N02 Gas;NO2;Analog Value;AV;0;250;500;750;1000"));
   
   Serial.print(analogRead(OZONE_SENSE_PIN));
-  Serial.print(F(";InsertSensorPackageName;MiCS-2611;Ozone;O3;response indicator;RI;0;250;500;750;1000"));
+  Serial.println(F(";InsertSensorPackageName;MiCS-2611;Ozone;O3;Analog Value;AV;0;250;500;750;1000"));
   
   Serial.print(analogRead(VOC_SENSE_PIN));
-  Serial.print(F(";InsertSensorPackageName;MiCS-5121;Volotile Organic Compounds;VOC;response indicator;RI;0;250;500;750;1000"));
+  Serial.println(F(";InsertSensorPackageName;MiCS-5121;Volotile Organic Compounds;VOC;Analog Value;AV;0;250;500;750;1000"));
 }
 
 //int test_count = 0;
