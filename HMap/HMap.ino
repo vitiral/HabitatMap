@@ -325,11 +325,11 @@ void write_data(){
   float tempC;
   //Display of humidity
   Serial.print(ReadHumiditySensor());
-  Serial.println(F(";InsertSensorPackageName;HYT271-H;Humidity;RH;response indicator;RI;0;1000;2000;3000;4096"));
+  Serial.println(F(";InsertSensorPackageName;SHT21-H;Humidity;RH;response indicator;RI;0;1000;2000;3000;4096"));
   
   Serial.print(ReadTempSensor());
   //Serial.print(42);
-  Serial.println(F(";InsertSensorPackageName;HYT271-T;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
+  Serial.println(F(";InsertSensorPackageName;SHT21-T;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
 
   Serial.print(ReadTempSensor_TI());
   Serial.println(F(";InsertSensorPackageName;TMP175;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
