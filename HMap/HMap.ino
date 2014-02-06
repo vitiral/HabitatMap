@@ -34,7 +34,7 @@
 #include <MemoryFree.h>
 
 //#define DEBUG
-//#include <SoftwareSerial.h>
+#include <SoftwareSerial.h>
 //SoftwareSerial dSerial(MOSI, MISO); // RX, TX
 
 #include <errorhandling.h>
