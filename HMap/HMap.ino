@@ -94,96 +94,48 @@
 // ****************************************************************************************8
 // ************   SENSORS
 
-uint16_t ReadHumiditySensor()
+unsigned int ReadHumiditySensor()
 {
-  uint16_t humidityValue = 0;
+  unsigned int humidityValue = 0;
 
   //Humidity Sensor START
   Wire.beginTransmission(0x40);
   //Wire.write(0xF5);
   Wire.write(0x05);
   Wire.endTransmission();   
-  delay (400);
+  delay (100);
   Wire.requestFrom(0x40,3);        //Read 2 bytes from the Humidity Sensor with read address  
   if( Wire.available() >= 2 )
   {
     humidityValue = Wire.read();            //Convert ASCII to decimal: 0x32 converts to 0x02
     humidityValue = humidityValue << 8;        //Upper High Byte (Most significant byte received first)     
-    humidityValue |= Wire.read();           //Convert to ASCII and append to end of Data structure
-    
-    //humidityValue = humidityValue >> 2;        // get rid of the unwanted data
-    humidityValue &= 0xFFF;
+    humidityValue += Wire.read();           //Convert to ASCII and append to end of Data structure
+    humidityValue = humidityValue >> 2;        // get rid of the unwanted data
   }    
   return humidityValue;
   //Humidity Sensor END 
-}
+} 
 
-uint16_t ReadTempSensor()
+unsigned int ReadTempSensor()
 {
-  uint16_t tempValue = 0;
+  unsigned int tempValue = 0;
 
   //Temperature Sensor START
   Wire.beginTransmission(0x40);
-  //Wire.write(0xF3);
-  Wire.write(0x03);
+  Wire.write(0xF3);
   Wire.endTransmission();   
-  delay (400);
+  delay (100);
   Wire.requestFrom(0x40,3);        //Read 2 bytes from the Temperature Sensor with read address  
   if( Wire.available() >= 2 )
   {
     tempValue = Wire.read();            //Convert ASCII to decimal: 0x32 converts to 0x02
     tempValue = tempValue << 8;        //Upper High Byte (Most significant byte received first)     
-    tempValue |= Wire.read();           //Convert to ASCII and append to end of Data structure
-    //tempValue = tempValue >> 2;					//get rid of the unwanted data
-    tempValue &= 0x3FFF;
-  }
+    tempValue += Wire.read();           //Convert to ASCII and append to end of Data structure
+    tempValue = tempValue >> 2;					//get rid of the unwanted data
+  }    
   return tempValue;
   //Humidity Sensor END 
 }
-
-uint16_t ReadTempSensor2()
-{
-  uint16_t humidityValue = 0;
-
-  //Humidity Sensor START
-  Wire.beginTransmission(0x40);
-  //Wire.write(0xF5);
-  Wire.write(0x03);
-  Wire.endTransmission();   
-  delay (400);
-  Wire.requestFrom(0x40,3);        //Read 2 bytes from the Humidity Sensor with read address  
-  if( Wire.available() >= 2 )
-  {
-    humidityValue = Wire.read();            //Convert ASCII to decimal: 0x32 converts to 0x02
-    humidityValue = humidityValue << 8;        //Upper High Byte (Most significant byte received first)     
-    humidityValue |= Wire.read();           //Convert to ASCII and append to end of Data structure
-    
-    //humidityValue = humidityValue >> 2;        // get rid of the unwanted data
-    humidityValue &= 0xFFF;
-  }    
-  return humidityValue;
-  //Humidity Sensor END 
-}
-
-
-uint8_t ReadSHT21_status()
-{
-  Wire.beginTransmission(0x40);
-  //Wire.write(0xF3);
-  Wire.write(0b111);
-  Wire.endTransmission();   
-  delay(100);
-  Wire.requestFrom(0x40,2); 
-  if(Wire.available() >= 2 )
-  {
-    uint8_t out = Wire.read();
-    Wire.read();
-    return out;
-  }
-  return 0;
-  //Humidity Sensor END 
-}
-
 
 unsigned int ReadCO2Sensor()
 {
@@ -268,57 +220,29 @@ void TempSensorsInit_TI()
   Wire.endTransmission();
 }
 
-//float ReadTempSensor_TI()
-uint16_t ReadTempSensor_TI()
+unsigned int ReadTempSensor_TI()
 {
   unsigned int tempValue = 0;
   unsigned int interValue = 0;
 
-  /*
   Wire.beginTransmission(0x48);    //Write to Write Data Address of U17
-  Wire.write(0x00);
+  Wire.requestFrom(0x48,2);        //Read 2 bytes from the TEMP Sensor 2 with read address
   Wire.endTransmission();  
-  Wire.requestFrom(0x48,2);        //Read 2 bytes from the TEMP Sensor 2 with read address
-  */
-  Wire.beginTransmission(0x48);    //Write to Write Data Address of U17
-  Wire.requestFrom(0x48,2);        //Read 2 bytes from the TEMP Sensor 2 with read address
-  Wire.endTransmission(); 
-  
+
   if( 2==Wire.available() )
   {
     tempValue = Wire.read();          //Recieve High Byte
     tempValue = tempValue << 4;          //Shift Left by 4 since, it is a complete 12 bit number
     interValue =  Wire.read();        //Receive Lower byte, first 4 MSBs are relevant, last 4 MSBs are 0 and irrelevant
-    interValue = interValue >> 4;          //Shift Lower byte by 4
-    //tempValue |= interValue;             //OR the two values to form complete temperature reading, Actual Value is in Two's Complement Form
-    tempValue += interValue;
+    interValue = interValue>>4;          //Shift Lower byte by 4
+    tempValue |= interValue;             //OR the two values to form complete temperature reading, Actual Value is in Two's Complement Form
   }
-  else return -1;
-  
-  if(tempValue & 0x0800){
-    // it is negative
-    tempValue &= ~0x0800; // get rid of - bit
-    tempValue = -tempValue;
-  }
-  
-  return tempValue;
-  /*
+
   //if(0xF7FF & tempValue)
   //  tempValue |= 0xF000;                 //Bring it to the real two's complement form
 
   delay(50);  
-  //return tempValue;
-  double T = tempValue;
-  Logger.println();
-  debug(T);
-  // v = 16T + .15
-  // T = (V - .15) / 16
-  //T = T * 25.0;
-  //T = T / 400.0;
-  T = (T - .15) / 16.0;
-  
-  return T;
-  */
+  return tempValue;
 }
 
 
@@ -367,21 +291,16 @@ void write_data(){
   float tempC;
   //Display of humidity
   Serial.print(ReadHumiditySensor());
-  Serial.println(F(";InsertSensorPackageName;SHT21-H;Humidity;RH;response indicator;RI;0;1000;2000;3000;4096"));
+  Serial.println(F(";InsertSensorPackageName;SHT21-H;Humidity;RH;digital value;DV;0;1000;2000;3000;4096"));
   
   Serial.print(ReadTempSensor());
-  //Serial.print(42);
-  Serial.println(F(";InsertSensorPackageName;SHT21-T;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
-  
-  Serial.print(ReadTempSensor2());
-  //Serial.print(42);
-  Serial.println(F(";InsertSensorPackageName;SHT21-T2;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
+  Serial.println(F(";InsertSensorPackageName;SHT21-T;Temperature;Temp;digital value;DV;0;1000;2000;3000;4096"));
   
   Serial.print(ReadTempSensor_TI());
-  Serial.println(F(";InsertSensorPackageName;TMP101;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
+  Serial.println(F(";InsertSensorPackageName;TMP101;Temperature;Temp;digital value;DV;0;1000;2000;3000;4096"));
   
   Serial.print(ReadCO2Sensor());
-  Serial.println(F(";InsertSensorPackageName;S100;CO2 Gas;CO;;RI;0;1250;2500;3750;5000"));
+  Serial.println(F(";InsertSensorPackageName;S100;CO2 Gas;CO;Analog Value;AV;0;1250;2500;3750;5000"));
   
   Serial.print(analogRead(CO_SENSE_PIN));
   Serial.println(F(";InsertSensorPackageName;MiCS-5525;CO Gas;CO;Analog Value;AV;0;250;500;750;1000"));
@@ -395,8 +314,6 @@ void write_data(){
   Serial.print(analogRead(VOC_SENSE_PIN));
   Serial.println(F(";InsertSensorPackageName;MiCS-5121;Volotile Organic Compounds;VOC;Analog Value;AV;0;250;500;750;1000"));
 
-  Serial.print(ReadSHT21_status());
-  Serial.println(F(";InsertSensorPackageName;SHT21-S;Status;St;response indicator;RI;0;1000;2000;3000;4096"));
 }
 
 //int test_count = 0;
