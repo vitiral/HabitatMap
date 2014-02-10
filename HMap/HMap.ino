@@ -291,13 +291,13 @@ void write_data(){
   float tempC;
   //Display of humidity
   Serial.print(ReadHumiditySensor());
-  Serial.println(F(";InsertSensorPackageName;SHT21-H;Humidity;RH;digital value;DV;0;1000;2000;3000;4096"));
+  Serial.println(F(";InsertSensorPackageName;SHT21-H;Humidity;RH;Digital Value;DV;0;1000;2000;3000;4096"));
   
   Serial.print(ReadTempSensor());
-  Serial.println(F(";InsertSensorPackageName;SHT21-T;Temperature;Temp;digital value;DV;0;1000;2000;3000;4096"));
+  Serial.println(F(";InsertSensorPackageName;SHT21-T;Temperature;Temp;Digital Value;DV;0;1000;2000;3000;4096"));
   
   Serial.print(ReadTempSensor_TI());
-  Serial.println(F(";InsertSensorPackageName;TMP101;Temperature;Temp;digital value;DV;0;1000;2000;3000;4096"));
+  Serial.println(F(";InsertSensorPackageName;TMP101;Temperature;Temp;Digital Value;DV;0;1000;2000;3000;4096"));
   
   Serial.print(ReadCO2Sensor());
   Serial.println(F(";InsertSensorPackageName;S100;CO2 Gas;CO;Analog Value;AV;0;1250;2500;3750;5000"));
