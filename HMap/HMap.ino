@@ -39,8 +39,6 @@
 
 #include <errorhandling.h>
 
-
-
 //This is the buffer size!!
 #define Buffer_size 1
 #define Buffer_length 12 // should be Data_length/2
@@ -105,7 +103,7 @@ uint16_t ReadHumiditySensor()
   //Wire.write(0xF5);
   Wire.write(0x05);
   Wire.endTransmission();   
-  delay (100);
+  delay (400);
   Wire.requestFrom(0x40,3);        //Read 2 bytes from the Humidity Sensor with read address  
   if( Wire.available() >= 2 )
   {
@@ -129,7 +127,7 @@ uint16_t ReadTempSensor()
   //Wire.write(0xF3);
   Wire.write(0x03);
   Wire.endTransmission();   
-  delay (100);
+  delay (400);
   Wire.requestFrom(0x40,3);        //Read 2 bytes from the Temperature Sensor with read address  
   if( Wire.available() >= 2 )
   {
@@ -142,6 +140,50 @@ uint16_t ReadTempSensor()
   return tempValue;
   //Humidity Sensor END 
 }
+
+uint16_t ReadTempSensor2()
+{
+  uint16_t humidityValue = 0;
+
+  //Humidity Sensor START
+  Wire.beginTransmission(0x40);
+  //Wire.write(0xF5);
+  Wire.write(0x03);
+  Wire.endTransmission();   
+  delay (400);
+  Wire.requestFrom(0x40,3);        //Read 2 bytes from the Humidity Sensor with read address  
+  if( Wire.available() >= 2 )
+  {
+    humidityValue = Wire.read();            //Convert ASCII to decimal: 0x32 converts to 0x02
+    humidityValue = humidityValue << 8;        //Upper High Byte (Most significant byte received first)     
+    humidityValue |= Wire.read();           //Convert to ASCII and append to end of Data structure
+    
+    //humidityValue = humidityValue >> 2;        // get rid of the unwanted data
+    humidityValue &= 0xFFF;
+  }    
+  return humidityValue;
+  //Humidity Sensor END 
+}
+
+
+uint8_t ReadSHT21_status()
+{
+  Wire.beginTransmission(0x40);
+  //Wire.write(0xF3);
+  Wire.write(0b111);
+  Wire.endTransmission();   
+  delay(100);
+  Wire.requestFrom(0x40,2); 
+  if(Wire.available() >= 2 )
+  {
+    uint8_t out = Wire.read();
+    Wire.read();
+    return out;
+  }
+  return 0;
+  //Humidity Sensor END 
+}
+
 
 unsigned int ReadCO2Sensor()
 {
@@ -330,9 +372,13 @@ void write_data(){
   Serial.print(ReadTempSensor());
   //Serial.print(42);
   Serial.println(F(";InsertSensorPackageName;SHT21-T;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
-
+  
+  Serial.print(ReadTempSensor2());
+  //Serial.print(42);
+  Serial.println(F(";InsertSensorPackageName;SHT21-T2;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
+  
   Serial.print(ReadTempSensor_TI());
-  Serial.println(F(";InsertSensorPackageName;TMP175;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
+  Serial.println(F(";InsertSensorPackageName;TMP101;Temperature;Temp;response indicator;RI;0;1000;2000;3000;4096"));
   
   Serial.print(ReadCO2Sensor());
   Serial.println(F(";InsertSensorPackageName;S100;CO2 Gas;CO;;RI;0;1250;2500;3750;5000"));
@@ -348,6 +394,9 @@ void write_data(){
   
   Serial.print(analogRead(VOC_SENSE_PIN));
   Serial.println(F(";InsertSensorPackageName;MiCS-5121;Volotile Organic Compounds;VOC;Analog Value;AV;0;250;500;750;1000"));
+
+  Serial.print(ReadSHT21_status());
+  Serial.println(F(";InsertSensorPackageName;SHT21-S;Status;St;response indicator;RI;0;1000;2000;3000;4096"));
 }
 
 //int test_count = 0;
