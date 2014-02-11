@@ -57,7 +57,7 @@
 #define CO_CONTROL_PIN 6        //PIN 10
 #define VOC_SENSE_ON_PIN 2       //PIN 32
 #define EXT_CO_PIN A0
-#define VOC_SENSE_PIN A3   //PIN 26  // VOC = Volotile Organic Compounds
+#define VOC_SENSE_PIN A3   //PIN 26  // VOC = Volatile Organic Compounds
 #define BAT_SENSE_PIN A2         //PIN 25 
 #define NO_CONTROL_PIN 4     //PIN 2
 #define OZONE_CONTROL_PIN 5      //PIN 9
@@ -312,7 +312,7 @@ void write_data(){
   Serial.println(F(";InsertSensorPackageName;MiCS-2611;Ozone;O3;Analog Value;AV;0;250;500;750;1000"));
   
   Serial.print(analogRead(VOC_SENSE_PIN));
-  Serial.println(F(";InsertSensorPackageName;MiCS-5121;Volotile Organic Compounds;VOC;Analog Value;AV;0;250;500;750;1000"));
+  Serial.println(F(";InsertSensorPackageName;MiCS-5121;Total VOCs;TVOC;Analog Value;AV;0;250;500;750;1000"));
 
 }
 
